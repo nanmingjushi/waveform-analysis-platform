@@ -1,8 +1,6 @@
 package com.nan.waveform.admin.mapper;
 
 import com.nan.waveform.common.domain.entity.SysUser;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

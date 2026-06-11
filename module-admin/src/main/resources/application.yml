@@ -19,7 +19,7 @@ spring:
       database: 0
       # password: # redis密码
 
-# MyBatis 原生配置
+# MyBatis配置
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml  # XML 文件存放位置
   type-aliases-package: com.nan.waveform.*.domain.entity # 实体类包名，方便 XML 里直接写类名

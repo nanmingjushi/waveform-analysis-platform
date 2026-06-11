@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nan.waveform.comtrade.mapper.ComtradeRecordMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comtrade_record (user_id, file_name, station_name, device_id,
+                                     start_time, trigger_time, analog_count, digital_count,
+                                     line_frequency, cfg_file_path, dat_file_path, create_time)
+        VALUES (#{userId}, #{fileName}, #{stationName}, #{deviceId},
+                #{startTime}, #{triggerTime}, #{analogCount}, #{digitalCount},
+                #{lineFrequency}, #{cfgFilePath}, #{datFilePath}, NOW())
+    </insert>
+
+    <select id="selectListByUserId" resultType="com.nan.waveform.comtrade.domain.entity.ComtradeRecord">
+        SELECT id,
+               user_id,
+               file_name,
+               station_name,
+               device_id,
+               start_time,
+               trigger_time,
+               analog_count,
+               digital_count,
+               line_frequency,
+               cfg_file_path,
+               dat_file_path,
+               create_time
+        FROM comtrade_record
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectById" resultType="com.nan.waveform.comtrade.domain.entity.ComtradeRecord">
+        SELECT id,
+               user_id,
+               file_name,
+               station_name,
+               device_id,
+               start_time,
+               trigger_time,
+               analog_count,
+               digital_count,
+               line_frequency,
+               cfg_file_path,
+               dat_file_path,
+               create_time
+        FROM comtrade_record
+        WHERE id = #{id}
+    </select>
+
+</mapper>

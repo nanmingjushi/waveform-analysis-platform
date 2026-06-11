@@ -1,10 +1,10 @@
 # ⚡ 试验录波快速解析平台 (Waveform Analysis Platform)
 
-基于现代企业级架构（Spring Boot 3 + Vue 3）打造的电力录波、电能质量数据与波形图像综合分析系统。
+基于SpringBoot 3 + Vue3的COMTRADE电力录波数据、电能质量数据与波形图像综合分析系统。
 
 ## 🏗️ 项目架构与模块划分
 
-本项目采用前后端分离架构，后端基于 Maven 多模块 (Multi-Module) 标准构建。
+本项目采用前后端分离架构，后端基于Maven多模块标准构建。
 
 ### 📦 后端工程 (`waveform-analysis-platform`)
 
@@ -16,10 +16,8 @@
 | **`module-power-quality`** | **业务模块**：负责电能质量测试数据（Excel/CSV）的读取、解析与结构化处理。 |
 | **`module-waveform-vision`** | **业务模块**：负责波形图像的识别与关键参数提取。 |
 
-### 🎨 前端工程
-
-- **`waveform-analysis-platform-ui`**
-  基于 Vue 3 + Vite + Element-Plus + Pinia 构建的现代化数据交互与波形可视化分析平台。
+### 🎨 前端工程(`waveform-analysis-platform-ui`)
+  基于Vue 3 + Vite + Element-Plus + Pinia构建的现代化数据交互与波形可视化分析平台。
 
 ## 🛠️ 核心技术栈
 

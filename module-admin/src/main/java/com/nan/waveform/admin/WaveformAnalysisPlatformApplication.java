@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 /**
  * 试验录波快速解析平台 - 主启动类
  */
-@SpringBootApplication(scanBasePackages = "com.nan", exclude = {DataSourceAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages = "com.nan")
 public class WaveformAnalysisPlatformApplication {
     public static void main(String[] args) {
         SpringApplication.run(WaveformAnalysisPlatformApplication.class, args);

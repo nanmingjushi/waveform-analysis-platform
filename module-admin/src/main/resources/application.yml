@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: waveform-analysis-platform
+  # MySQL 配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/waveform_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456 # 替换为本地数据库密码
+
+  # Redis 配置
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+      # password: # redis密码
+
+# MyBatis 原生配置
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml  # XML 文件存放位置
+  type-aliases-package: com.nan.waveform.*.domain.entity # 实体类包名，方便 XML 里直接写类名
+  configuration:
+    map-underscore-to-camel-case: true # 开启驼峰命名自动映射 (user_name -> userName)
+
+# 自定义 JWT 配置
+jwt:
+  secret: waveform_nan_secret_key_2026!@#
+  expiration: 86400 # token 过期时间，单位秒 (1天)

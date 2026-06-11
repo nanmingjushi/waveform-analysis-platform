@@ -7,8 +7,9 @@ import lombok.Data;
  */
 
 /**
- * 全局统一响应体
+ * 全局统一响应体，后端统一返回结果
  */
+
 @Data
 public class Result<T> {
     private Integer code;       // 状态码：200成功，500失败

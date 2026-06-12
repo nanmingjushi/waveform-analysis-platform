@@ -10,11 +10,13 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.text.DecimalFormat;
 import java.util.List;
 
 /**
  * @author nan chao
  * @since 2026/6/11 15:41
+ *
  * 将解析出的采样点集合转换为 CSV 字节流，供用户下载
  */
 
@@ -29,6 +31,11 @@ public class CsvExporter {
         List<AnalogChannelDto> analogChannels = parseResult.getAnalogChannels();
         List<DigitalChannelDto> digitalChannels = parseResult.getDigitalChannels();
         List<SamplePointDto> samplePoints = parseResult.getSamplePoints();
+
+        // 引入高精度数字格式化器，强制保留小数点后 6 位
+        // 彻底粉碎 Java 在计算 原始值 * A + B 时由于二进制转换产生的诸如 .000000000001 这样的低级精度噪声
+        DecimalFormat df = new DecimalFormat("#.######");
+
 
         // 使用 BufferedWriter 并强制指定为电力系统通用的 GBK 编码（保证用户用 Excel 直接双击打开 CSV 时中文不乱码）
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "GBK"))) {
@@ -48,15 +55,15 @@ public class CsvExporter {
             writer.write(header.toString());
             writer.newLine();
 
-            // 2. 循环遍历并写入每一个时间维度的采样点数据 (Data Rows)
+            // 2. 纯净无损：老老实实循环遍历并流式写入每一个时间维度的【所有】采样点数据，绝不擅自截断
             for (SamplePointDto point : samplePoints) {
                 StringBuilder row = new StringBuilder();
                 // 写入采样序号和时间戳
                 row.append(point.getN()).append(",").append(point.getTimestampUs());
 
-                // 写入当前采样点下所有模拟通道的真实还原物理量值
+                // 写入当前采样点下所有模拟通道的真实还原物理量值（应用 6 位小数高精度格式化限制）
                 for (Double analogVal : point.getAnalogValues()) {
-                    row.append(",").append(analogVal);
+                    row.append(",").append(df.format(analogVal));
                 }
 
                 // 写入当前采样点下所有数字通道的状态值 (0 或 1)
@@ -69,7 +76,7 @@ public class CsvExporter {
             }
 
             writer.flush();
-            log.info("CSV 数据文本流生成成功! 成功导出 [{}] 行时间序列采样记录", samplePoints.size());
+            log.info("工业全量高精度 CSV 数据生成成功! 成功无损导出共计 [{}] 行全量波形采样记录", samplePoints.size());
         }
     }
 }

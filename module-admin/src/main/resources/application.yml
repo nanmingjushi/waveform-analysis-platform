@@ -21,7 +21,7 @@ spring:
 
 # MyBatis配置
 mybatis:
-  mapper-locations: classpath:mapper/**/*.xml  # XML 文件存放位置
+  mapper-locations: classpath*:mapper/**/*.xml  # XML 文件存放位置
   type-aliases-package: com.nan.waveform.*.domain.entity # 实体类包名，方便 XML 里直接写类名
   configuration:
     map-underscore-to-camel-case: true # 开启驼峰命名自动映射 (user_name -> userName)

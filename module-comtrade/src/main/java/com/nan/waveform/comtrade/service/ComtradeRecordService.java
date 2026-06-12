@@ -30,4 +30,19 @@ public interface ComtradeRecordService {
      * @return 经过精简转换后的前端表格展示对象(VO)集合
      */
     List<ComtradeRecordListVo> getRecordListByUserId(Long userId);
+
+    /**
+     * 根据记录 ID 和用户 ID 获取并校验合法的录波记录 (带水平越权校验)
+     * @param id     录波记录主键 ID
+     * @param userId 当前登录用户 ID
+     * @return 完整的录波记录实体类
+     */
+    ComtradeRecord getValidatedRecord(Long id, Long userId);
+
+    /**
+     * 直接接收已验证的实体，实时读取本地物理文件并高性能转换为 CSV 字节流输出
+     * @param record       已经过权限校验的录波记录实体
+     * @param outputStream 目标网络输出流
+     */
+    void downloadCsv(ComtradeRecord record, java.io.OutputStream outputStream);
 }

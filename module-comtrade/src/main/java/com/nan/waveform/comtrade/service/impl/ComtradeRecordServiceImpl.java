@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -105,6 +106,7 @@ public class ComtradeRecordServiceImpl implements ComtradeRecordService {
         }
     }
 
+
     @Override
     public List<ComtradeRecordListVo> getRecordListByUserId(Long userId) {
         List<ComtradeRecord> dbRecords = comtradeRecordMapper.selectListByUserId(userId);
@@ -127,4 +129,53 @@ public class ComtradeRecordServiceImpl implements ComtradeRecordService {
         return frontendVoList;
     }
 
+
+    @Override
+    public ComtradeRecord getValidatedRecord(Long id, Long userId) {
+        // 1. 从数据库中捞出这条记录的轻量级元数据标签
+        ComtradeRecord record = comtradeRecordMapper.selectById(id);
+        if (record == null) {
+            throw new IllegalArgumentException("错误：未找到该对应的录波记录");
+        }
+
+        // 2. 纵深防御：严格校验数据所属权，防止恶意水平越权行为
+        if (!record.getUserId().equals(userId)) {
+            log.warn("安全警报：用户 [{}] 企图越权操作属于用户 [{}] 的录波数据！", userId, record.getUserId());
+            throw new RuntimeException("对不起，您无权操作该录波文件数据");
+        }
+
+        return record;
+    }
+
+    @Override
+    public void downloadCsv(ComtradeRecord record, java.io.OutputStream outputStream) {
+        // 3. 提取物理磁盘指针
+        java.io.File cfgFile = new java.io.File(record.getCfgFilePath());
+        java.io.File datFile = new java.io.File(record.getDatFilePath());
+
+        if (!cfgFile.exists() || !datFile.exists()) {
+            log.error("物理文件丢失！磁盘路径可能被损坏。CFG: {}, DAT: {}", record.getCfgFilePath(), record.getDatFilePath());
+            throw new RuntimeException("服务器本地物理原始录波文件已丢失，请重新上传解析");
+        }
+
+        try {
+            // 4. 二次流化高效解析：直接从我们自己纳管的物理文件中拉出流
+            ComtradeParseResultDto parseResult;
+            try (java.io.InputStream cfgIn = java.nio.file.Files.newInputStream(cfgFile.toPath());
+                 java.io.InputStream datIn = java.nio.file.Files.newInputStream(datFile.toPath())) {
+
+                // 驱动无状态算法引擎
+                parseResult = CfgParser.parse(cfgIn);
+                DatParser.parse(datIn, parseResult);
+            }
+
+            // 5. 驱动算法层的 CsvExporter 转换引擎，将数据流式压入网络输出流
+            com.nan.waveform.comtrade.core.exporter.CsvExporter.exportToCsv(outputStream, parseResult);
+            log.info("录波记录 ID [{}] 成功实时转化为标准的 CSV 文本流并投递完毕", record.getId());
+
+        } catch (IOException e) {
+            log.error("在将录波物理文件流式转换为 CSV 吐出时发生严重 IO 异常", e);
+            throw new RuntimeException("实时导出 CSV 文件失败: " + e.getMessage());
+        }
+    }
 }

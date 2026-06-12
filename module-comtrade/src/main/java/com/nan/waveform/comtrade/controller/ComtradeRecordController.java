@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -75,4 +76,54 @@ public class ComtradeRecordController {
 
         return Result.success(historyVos);
     }
+
+
+    /**
+     * 导出接口：传入录波记录的数据库 ID，系统自动进行后端流式转换并触发浏览器下载
+     */
+    @Operation(summary = "一键导出并下载 CSV 文件", description = "导出的 CSV 文件将与原始上传的 CFG/DAT 文件完全同名")
+    @GetMapping("/download/{id}")
+    public void downloadConvertedCsv(
+            @org.springframework.web.bind.annotation.PathVariable("id") Long id,
+            jakarta.servlet.http.HttpServletResponse response,
+            jakarta.servlet.http.HttpServletRequest request) throws IOException {
+
+        // 1. 安全抓取操作员上下文
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            response.sendError(401, "未登录或登录凭证已失效");
+            return;
+        }
+
+        try {
+            // 2. 首先调用新接口，获取并校验合法的数据库记录元数据
+            ComtradeRecord record = comtradeRecordService.getValidatedRecord(id, userId);
+
+            // 核心命名魔法：获取库里的原始文件名 (如 2023-06-02_10-00-02_sta_SH5522.CFG)
+            String originalFileName = record.getFileName();
+            String downloadFileName = "waveform_record_" + id + ".csv"; // 兜底名
+
+            if (originalFileName != null && originalFileName.contains(".")) {
+                // 掐头去尾：裁掉最后一个点后面的所有字母，强行拼接上小写的 .csv
+                downloadFileName = originalFileName.substring(0, originalFileName.lastIndexOf(".")) + ".csv";
+            }
+
+            // 4. 告诉浏览器这是一个标准的附件下载响应，并强制指定 GBK 编码（确保用户用 Excel 双击打开时不出现乱码）
+            response.setContentType("text/csv;charset=GBK");
+            response.setHeader("Content-Disposition", "attachment; filename=" + downloadFileName);
+
+            // 5. 将网络响应原生字节流递给 Service 层进行高能流式灌注
+            comtradeRecordService.downloadCsv(record, response.getOutputStream());
+
+        } catch (Exception e) {
+            log.error("下载 CSV 文件在网络管道层发生意外崩溃", e);
+            if (!response.isCommitted()) {
+                response.reset();
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"code\":500,\"message\":\"导出 CSV 失败：" + e.getMessage() + "\",\"data\":null}");
+            }
+        }
+    }
+
+
 }

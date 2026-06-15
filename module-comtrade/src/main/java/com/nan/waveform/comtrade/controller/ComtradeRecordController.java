@@ -22,7 +22,7 @@ import java.util.List;
  * 录波文件上传、历史记录查询、触发解析、CSV下载入口
  */
 
-@Tag(name = "comtrade格式录波文件", description = "处理COMTRADE格式录波文件")
+@Tag(name = "comtrade格式录波文件读取解析", description = "处理COMTRADE格式录波文件")
 @Slf4j
 @RestController
 @RequestMapping("/api/comtrade")

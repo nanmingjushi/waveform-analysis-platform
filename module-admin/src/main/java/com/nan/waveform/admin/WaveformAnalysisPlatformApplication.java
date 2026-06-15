@@ -17,7 +17,7 @@ public class WaveformAnalysisPlatformApplication {
     public static void main(String[] args) {
         SpringApplication.run(WaveformAnalysisPlatformApplication.class, args);
         System.out.println("=================================================");
-        System.out.println("(♥◠‿◠)ﾉﾞ  试验录波快速解析平台启动成功！ ⚡  ");
+        System.out.println("(♥◠‿◠)ﾉﾞ  试验录波文件快速解析平台启动成功！ ⚡  ");
         System.out.println("=================================================");
     }
 }

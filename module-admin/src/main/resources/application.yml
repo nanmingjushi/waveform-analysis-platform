@@ -34,3 +34,21 @@ mybatis:
 jwt:
   secret: waveform_nan_secret_key_2026!@#
   expiration: 86400 # token 过期时间，单位秒 (1天)
+
+
+# module-waveform-vision模块的配置参数
+waveform-vision:
+  # 三相裁剪区域 (ROI)
+  roi:
+    phase-a: { x: 55, y: 56, w: 1400, h: 310 }    # A相默认物理裁剪矩形
+    phase-b: { x: 55, y: 370, w: 1400, h: 310 }   # B相默认物理裁剪矩形
+    phase-c: { x: 55, y: 683, w: 1400, h: 310 }   # C相默认物理裁剪矩形
+    jieyue: { x: 58, y: 456, w: 980, h: 147 }     # 阶跃响应时间专属裁剪矩形
+  # HSV颜色
+  hsv:
+    green:
+      low: [35, 60, 50]
+      high: [85, 255, 255]
+    blue:
+      low: [100, 80, 60]
+      high: [130, 255, 255]

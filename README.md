@@ -2,7 +2,7 @@
 
 #### 项目简介
 
-试验录波文件快速解析平台（Waveform Analysis Platform）是一个基于Spring Boot开发的电力系统波形数据读取与波形图像解析平台。系统采用多模块架构，主要用于解析电力系统中的录波文件（COMTRADE格式）、波形图像识别关键参数以及自动生成电能质量测试数据报告，以此来替代传统的人工工作。
+试验录波文件快速解析平台（Waveform Analysis Platform）是一个基于Spring Boot开发的电力系统波形数据读取与波形图像解析平台，本后端系统对应的前端项目[waveform-analysis-platform-ui](https://github.com/nanmingjushi/waveform-analysis-platform-ui)。系统采用多模块架构，主要用于解析电力系统中的录波文件（COMTRADE格式）、波形图像识别关键参数以及自动生成电能质量测试数据报告，以此来替代传统的人工工作。
 
 #### 核心功能模块
 

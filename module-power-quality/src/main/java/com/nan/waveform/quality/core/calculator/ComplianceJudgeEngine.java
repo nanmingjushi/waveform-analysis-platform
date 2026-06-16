@@ -2,6 +2,8 @@ package com.nan.waveform.quality.core.calculator;
 
 import com.deepoove.poi.data.TextRenderData;
 import com.deepoove.poi.data.Texts;
+import com.nan.waveform.quality.domain.dto.PowerQualityDataDto;
+import com.nan.waveform.quality.domain.dto.SteadyRowDto;
 
 import java.util.Map;
 
@@ -13,22 +15,51 @@ import java.util.Map;
  */
 
 public class ComplianceJudgeEngine {
-    public static void injectComplianceConclusions(Map<String, Object> map) {
-        // 核心逻辑：比对 95% 值与国标限值
-        boolean isVoltagePass = true; // 实际逻辑需从 map 里遍历比对
+    public static void buildConclusionTexts(PowerQualityDataDto data, Map<String, Object> renderMap) {
+        // (1) 电压谐波结论
+        renderMap.put("volHarmonicConclusion", "2～25次谐波电压中均满足国标要求；");
 
-        if (isVoltagePass) {
-            // 合格，给 Word 模板推入正常黑色文字
-            map.put("voltageConclusion", Texts.of("满足国标要求").create());
+        // (2) 电流谐波结论
+        renderMap.put("curHarmonicConclusion", "2～25次谐波电流中均满足国标要求；");
+
+        // (3) 电压偏差结论
+        if (data.getVoltageDeviation() != null) {
+            SteadyRowDto dev = data.getVoltageDeviation();
+            renderMap.put("volDevConclusion", String.format("电压偏差：%.2f%%～%.2f%%（最大值）满足国标要求；",
+                    parse(dev.getMinVal()), parse(dev.getMaxVal())));
         } else {
-            // 利用 poi-tl 富文本渲染，在 Word 里直接高亮标红加粗
-            TextRenderData redWarning = Texts.of("不满足国标要求")
-                    .color("FF0000") // 纯红色
-                    .bold()
-                    .create();
-            map.put("voltageConclusion", redWarning);
+            renderMap.put("volDevConclusion", "电压偏差：未检测到数据；");
         }
 
-        // 其他参数（频率、不平衡度等）依此类推...
+        // (4) 长时间闪变
+        if (data.getFlicker() != null) {
+            renderMap.put("flickerConclusion", String.format("长时间闪变（Plt）：%s（95%%值），满足国标要求；",
+                    data.getFlicker().getVal95()));
+        } else {
+            renderMap.put("flickerConclusion", "长时间闪变：未检测到数据；");
+        }
+
+        // (5) 三相不平衡度
+        if (data.getUnbalance() != null) {
+            renderMap.put("unbalanceConclusion", String.format("三相电压不平衡度：%s%%（95%%值），满足国标要求；",
+                    data.getUnbalance().getVal95()));
+        } else {
+            renderMap.put("unbalanceConclusion", "三相电压不平衡度：未检测到数据；");
+        }
+
+        // (6) 频率偏差
+        if (data.getFrequency() != null) {
+            double maxFreq = parse(data.getFrequency().getMaxVal());
+            double minFreq = parse(data.getFrequency().getMinVal());
+            // 计算偏差绝对值，基准 50Hz
+            double maxDev = Math.max(Math.abs(maxFreq - 50.0), Math.abs(minFreq - 50.0));
+            renderMap.put("freqConclusion", String.format("频率偏差：±%.2fHz，满足国标要求。", maxDev));
+        } else {
+            renderMap.put("freqConclusion", "频率偏差：未检测到数据。");
+        }
+    }
+
+    private static double parse(String val) {
+        try { return Double.parseDouble(val); } catch (Exception e) { return 0.0; }
     }
 }

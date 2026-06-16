@@ -70,6 +70,6 @@ public class PowerQualityReportReqDto {
     @Schema(description = "测试设备有效期", example = "2025.6.23")
     private String equipmentValidDate;
 
-    @Schema(description = "电能质量测试仪导出的多Sheet Excel文件", required = true)
+    @Schema(description = "源数据Excel文件", requiredMode = Schema.RequiredMode.REQUIRED)
     private MultipartFile file;
 }

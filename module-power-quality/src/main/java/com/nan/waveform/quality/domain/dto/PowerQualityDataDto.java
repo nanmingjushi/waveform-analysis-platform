@@ -20,8 +20,14 @@ public class PowerQualityDataDto {
     private List<HarmonicRowDto> curHarmonics = new ArrayList<>();
 
 
-    private SteadyRowDto voltageDeviation; // 电压偏差
-    private SteadyRowDto flicker;          // 长时间闪变
-    private SteadyRowDto frequency;        // 频率
-    private SteadyRowDto unbalance;        // 三相电压不平衡
+
+    private SteadyRowDto frequency;
+    private SteadyRowDto unbalance;
+    private SteadyRowDto flickerAB;
+    private SteadyRowDto flickerBC;
+    private SteadyRowDto flickerAC;
+
+
+    private DeviationRowDto deviationUp;
+    private DeviationRowDto deviationDown;
 }

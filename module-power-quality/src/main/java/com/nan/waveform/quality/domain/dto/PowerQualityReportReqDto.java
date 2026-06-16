@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * @author nan chao
  * @since 2026/6/16 10:23
@@ -72,4 +74,8 @@ public class PowerQualityReportReqDto {
 
     @Schema(description = "源数据Excel文件", requiredMode = Schema.RequiredMode.REQUIRED)
     private MultipartFile file;
+
+    // 图片
+    @Schema(description = "附图数组")
+    private List<MultipartFile> images;
 }

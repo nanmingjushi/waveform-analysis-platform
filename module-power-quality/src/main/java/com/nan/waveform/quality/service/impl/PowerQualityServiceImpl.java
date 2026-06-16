@@ -29,22 +29,15 @@ public class PowerQualityServiceImpl implements PowerQualityService {
     @Override
     public void generateWordReport(PowerQualityReportReqDto reqDto, HttpServletResponse response) {
         try {
-            // 1. 用 EasyExcel 提取所有的核心数据 (防 OOM 大闸)
-            PowerQualityDataDto coreData = ExcelParserEngine.parseAll(reqDto.getFile());
-
-            // 2. 准备传给 poi-tl 渲染的纯文本 Map
+            // 准备传给 poi-tl 渲染的纯文本 Map
             Map<String, Object> textRenderMap = new HashMap<>();
 
-            // 3. 注入动态文字结论
-            ComplianceJudgeEngine.buildConclusionTexts(coreData, textRenderMap);
-
-            // 4. 注入前端传来的台账信息
+            // 注入前端传来的台账信息
             injectFrontendData(textRenderMap, reqDto);
 
-            // 5. 导出 Word (文本用 poi-tl，表格复刻您的原生创建行逻辑)
-            WordReportExporter.exportToResponse(textRenderMap, coreData, response);
+            WordReportExporter.exportToResponse(textRenderMap, reqDto.getFile(), reqDto.getImages(), reqDto.getTestSite(), response);
 
-            log.info("✅ 报告生成导出成功！");
+            log.info("✅ 报告导出成功！");
         } catch (Exception e) {
             log.error("❌ 报告生成失败: ", e);
             throw new RuntimeException("报告渲染引擎崩溃：" + e.getMessage(), e);

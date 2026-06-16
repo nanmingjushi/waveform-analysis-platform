@@ -5,6 +5,7 @@ import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.read.metadata.ReadSheet;
+import com.nan.waveform.quality.domain.dto.DeviationRowDto;
 import com.nan.waveform.quality.domain.dto.HarmonicRowDto;
 import com.nan.waveform.quality.domain.dto.PowerQualityDataDto;
 import com.nan.waveform.quality.domain.dto.SteadyRowDto;
@@ -20,152 +21,93 @@ import java.util.Map;
 /**
  * @author nan chao
  * @since 2026/6/16 10:26
- *
+ * <p>
  * Excel解析引擎
  */
 
 @Slf4j
 public class ExcelParserEngine {
-
     public static PowerQualityDataDto parseAll(MultipartFile file) throws Exception {
         PowerQualityDataDto dataBox = new PowerQualityDataDto();
 
-        try (InputStream is = file.getInputStream()) {
-            ExcelReader excelReader = EasyExcel.read(is).build();
+        try (InputStream is1 = file.getInputStream();
+             InputStream is2 = file.getInputStream();
+             InputStream is3 = file.getInputStream()) {
 
-            // 1. 读取【电压谐波】Sheet：负责抓取电压谐波、电压偏差、长时间闪变
-            ReadSheet volSheet = EasyExcel.readSheet("电压谐波")
-                    .headRowNumber(8) // 跳过台账头
-                    .registerReadListener(new VolSheetListener(dataBox))
-                    .build();
+            // 同步一次性捞出所有 Sheet 的绝对物理行
+            List<Map<Integer, String>> volRows = EasyExcel.read(is1).sheet("电压谐波").doReadSync();
+            List<Map<Integer, String>> curRows = EasyExcel.read(is2).sheet("电流谐波").doReadSync();
+            List<Map<Integer, String>> powerRows = EasyExcel.read(is3).sheet("功率").doReadSync();
 
-            // 2. 读取【电流谐波】Sheet：负责抓取电流谐波
-            ReadSheet curSheet = EasyExcel.readSheet("电流谐波")
-                    .headRowNumber(8)
-                    .registerReadListener(new CurSheetListener(dataBox))
-                    .build();
+            // 1. 严格抓取电压谐波 (基波=9, 2-25次=10~33, THD=59)
+            dataBox.getVolHarmonics().add(extractHarmonicRow(volRows, 9));
+            for (int i = 10; i <= 33; i++) {
+                dataBox.getVolHarmonics().add(extractHarmonicRow(volRows, i));
+            }
+            dataBox.getVolHarmonics().add(extractHarmonicRow(volRows, 59));
 
-            // 3. 读取【功率】Sheet：负责抓取频率、不平衡度
-            ReadSheet powerSheet = EasyExcel.readSheet("功率")
-                    .headRowNumber(8)
-                    .registerReadListener(new PowerSheetListener(dataBox))
-                    .build();
+            // 2. 严格抓取电流谐波 (基波=9, 2-25次=10~33)
+            dataBox.getCurHarmonics().add(extractHarmonicRow(curRows, 9));
+            for (int i = 10; i <= 33; i++) {
+                dataBox.getCurHarmonics().add(extractHarmonicRow(curRows, i));
+            }
 
-            excelReader.read(volSheet, curSheet, powerSheet);
-            excelReader.finish();
+            // 3. 抓取表1.3需要的稳态行 (频率=功率表15, 不平衡度=功率表16)
+            dataBox.setFrequency(extractSteadyRow(powerRows, 15));
+            dataBox.setUnbalance(extractSteadyRow(powerRows, 16));
+            // 闪变 = 电压表61行，拆出3个通道
+            dataBox.setFlickerAB(extractFlickerPhase(volRows, 61, 2, 3, 4, 5, 17));
+            dataBox.setFlickerBC(extractFlickerPhase(volRows, 61, 7, 8, 9, 10, 17));
+            dataBox.setFlickerAC(extractFlickerPhase(volRows, 61, 12, 13, 14, 15, 17));
+
+            // 4. 抓取表1.4电压偏差 (上偏差=电压表63, 下偏差=电压表64)
+            dataBox.setDeviationUp(extractDeviationRow(volRows, 63));
+            dataBox.setDeviationDown(extractDeviationRow(volRows, 64));
         }
         return dataBox;
     }
 
-    /** ================= 监听器 1：电压谐波 ================= */
-    private static class VolSheetListener extends AnalysisEventListener<Map<Integer, String>> {
-        private final PowerQualityDataDto dataBox;
-        public VolSheetListener(PowerQualityDataDto dataBox) { this.dataBox = dataBox; }
-
-        @Override
-        public void invoke(Map<Integer, String> row, AnalysisContext ctx) {
-            String param = row.getOrDefault(0, "").trim();
-            if (param.isEmpty()) return;
-
-            // 抓取基波和2-25次谐波
-            if (param.equals("基波电压(V)") || (param.matches("^\\d+$") && Integer.parseInt(param) <= 25)) {
-                dataBox.getVolHarmonics().add(extractHarmonic(param, row));
-            }
-            // 抓取 THD
-            else if (param.contains("电压总畸变率")) {
-                dataBox.getVolHarmonics().add(extractHarmonic("THD", row));
-            }
-            // 抓取 电压偏差
-            else if (param.contains("电压偏差")) {
-                dataBox.setVoltageDeviation(extractSteadyMax(param, row));
-            }
-            // 抓取 长时间闪变
-            else if (param.contains("长时间闪变")) {
-                dataBox.setFlicker(extractSteadyMax(param, row));
-            }
-        }
-        @Override public void doAfterAllAnalysed(AnalysisContext ctx) {}
-    }
-
-    /** ================= 监听器 2：电流谐波 ================= */
-    private static class CurSheetListener extends AnalysisEventListener<Map<Integer, String>> {
-        private final PowerQualityDataDto dataBox;
-        public CurSheetListener(PowerQualityDataDto dataBox) { this.dataBox = dataBox; }
-
-        @Override
-        public void invoke(Map<Integer, String> row, AnalysisContext ctx) {
-            String param = row.getOrDefault(0, "").trim();
-            if (param.isEmpty()) return;
-
-            // 抓取基波和2-25次谐波
-            if (param.equals("基波电流(A)") || (param.matches("^\\d+$") && Integer.parseInt(param) <= 25)) {
-                dataBox.getCurHarmonics().add(extractHarmonic(param, row));
-            }
-        }
-        @Override public void doAfterAllAnalysed(AnalysisContext ctx) {}
-    }
-
-    /** ================= 监听器 3：功率/稳态 ================= */
-    private static class PowerSheetListener extends AnalysisEventListener<Map<Integer, String>> {
-        private final PowerQualityDataDto dataBox;
-        public PowerSheetListener(PowerQualityDataDto dataBox) { this.dataBox = dataBox; }
-
-        @Override
-        public void invoke(Map<Integer, String> row, AnalysisContext ctx) {
-            String param = row.getOrDefault(0, "").trim();
-
-            if (param.contains("频率")) {
-                dataBox.setFrequency(extractSteadyMax(param, row));
-            } else if (param.contains("不平衡度")) {
-                dataBox.setUnbalance(extractSteadyMax(param, row));
-            }
-        }
-        @Override public void doAfterAllAnalysed(AnalysisContext ctx) {}
-    }
-
-    /** --- 内部提取工具：谐波行提取 --- */
-    private static HarmonicRowDto extractHarmonic(String order, Map<Integer, String> row) {
+    private static HarmonicRowDto extractHarmonicRow(List<Map<Integer, String>> rows, int index) {
         HarmonicRowDto dto = new HarmonicRowDto();
-        dto.setOrder(order);
-        // 按实际 CSV 索引：Avg 是 3, 8, 13；95% 是 5, 10, 15；限值是 17
-        dto.setAbAvg(format(row.get(3)));
-        dto.setAb95(format(row.get(5)));
-        dto.setBcAvg(format(row.get(8)));
-        dto.setBc95(format(row.get(10)));
-        dto.setCaAvg(format(row.get(13)));
-        dto.setCa95(format(row.get(15)));
-        dto.setLimitVal(format(row.get(17)));
+        if (index >= rows.size()) return dto;
+        Map<Integer, String> row = rows.get(index);
+        dto.setAbAvg(row.get(3));  dto.setAb95(row.get(5));
+        dto.setBcAvg(row.get(8));  dto.setBc95(row.get(10));
+        dto.setCaAvg(row.get(13)); dto.setCa95(row.get(15));
+        dto.setLimitVal(row.get(17));
         return dto;
     }
 
-    /** --- 内部提取工具：稳态综合行提取 (取三相中最恶劣/最大值) --- */
-    private static SteadyRowDto extractSteadyMax(String name, Map<Integer, String> row) {
+    private static SteadyRowDto extractSteadyRow(List<Map<Integer, String>> rows, int index) {
         SteadyRowDto dto = new SteadyRowDto();
-        dto.setItemName(name);
-        // Max(2,7,12), Avg(3,8,13), Min(4,9,14), 95%(5,10,15)
-        dto.setMaxVal(maxAmongPhases(row.get(2), row.get(7), row.get(12)));
-        dto.setAvgVal(maxAmongPhases(row.get(3), row.get(8), row.get(13)));
-        dto.setMinVal(maxAmongPhases(row.get(4), row.get(9), row.get(14)));
-        dto.setVal95(maxAmongPhases(row.get(5), row.get(10), row.get(15)));
-        dto.setLimitVal(format(row.get(17)));
+        if (index >= rows.size()) return dto;
+        Map<Integer, String> row = rows.get(index);
+        dto.setMaxVal(row.get(2));  dto.setAvgVal(row.get(3));
+        dto.setMinVal(row.get(4));  dto.setVal95(row.get(5));
+        dto.setLimitVal(row.get(17));
         return dto;
     }
 
-    private static String maxAmongPhases(String a, String b, String c) {
-        double valA = parse(a); double valB = parse(b); double valC = parse(c);
-        double max = Math.max(valA, Math.max(valB, valC));
-        return max == -9999.0 ? "--" : String.format("%.2f", max);
+    private static SteadyRowDto extractFlickerPhase(List<Map<Integer, String>> rows, int index, int max, int avg, int min, int v95, int lim) {
+        SteadyRowDto dto = new SteadyRowDto();
+        if (index >= rows.size()) return dto;
+        Map<Integer, String> row = rows.get(index);
+        dto.setMaxVal(row.get(max));  dto.setAvgVal(row.get(avg));
+        dto.setMinVal(row.get(min));  dto.setVal95(row.get(v95));
+        dto.setLimitVal(row.get(lim));
+        return dto;
     }
 
-    private static double parse(String val) {
-        try { return (val == null || val.trim().isEmpty() || val.contains("--")) ? -9999.0 : Double.parseDouble(val.trim()); }
-        catch (Exception e) { return -9999.0; }
+    private static DeviationRowDto extractDeviationRow(List<Map<Integer, String>> rows, int index) {
+        DeviationRowDto dto = new DeviationRowDto();
+        if (index >= rows.size()) return dto;
+        Map<Integer, String> row = rows.get(index);
+        dto.setAbMax(row.get(2));   dto.setAbMin(row.get(4));
+        dto.setBcMax(row.get(7));   dto.setBcMin(row.get(9));
+        dto.setAcMax(row.get(12));  dto.setAcMin(row.get(14));
+        dto.setLimitVal(row.get(17));
+        return dto;
     }
 
-    private static String format(String val) {
-        if (val == null || val.trim().isEmpty()) return "--";
-        try { return String.format("%.2f", Double.parseDouble(val.trim())); }
-        catch (Exception e) { return val.trim(); }
-    }
 }
 

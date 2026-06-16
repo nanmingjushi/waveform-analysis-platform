@@ -35,6 +35,11 @@ jwt:
   secret: waveform_nan_secret_key_2026!@#
   expiration: 86400 # token 过期时间，单位秒 (1天)
 
+# 日志打印
+logging:
+  level:
+    com.alibaba.excel.metadata.format.DataFormatter: OFF
+
 
 # module-waveform-vision模块的配置参数
 waveform-vision:

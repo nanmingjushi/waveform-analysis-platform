@@ -1,26 +1,52 @@
-# ⚡ 试验录波快速解析平台 (Waveform Analysis Platform)
+## 试验录波快速解析平台 (Waveform Analysis Platform)
 
-基于SpringBoot 3 + Vue3的COMTRADE电力录波数据、电能质量数据与波形图像综合分析系统。
+#### 项目简介
 
-## 🏗️ 项目架构与模块划分
+试验录波文件快速解析平台（Waveform Analysis Platform）是一个基于Spring Boot开发的电力系统波形数据读取与波形图像解析平台。系统采用多模块架构，主要用于解析电力系统中的录波文件（COMTRADE格式）、波形图像识别关键参数以及自动生成电能质量测试数据报告，以此来替代传统的人工工作。
 
-本项目采用前后端分离架构，后端基于Maven多模块标准构建。
+#### 核心功能模块
 
-### 📦 后端工程 (`waveform-analysis-platform`)
+- `module-admin`
 
-| 模块名称 | 职责描述 |
-| :--- | :--- |
-| **`module-admin`** | **入口模块**：包含主启动类与系统核心配置文件（如 `application.yml`）。负责集成各个业务模块并打包。 |
-| **`module-common`** | **公共模块**：提供全局统一基建，如统一响应对象 `Result`、全局异常处理、公用工具类（Hutool）等。 |
-| **`module-comtrade`** | **业务模块**：负责 COMTRADE 格式故障录波文件的快速读取、解析与数据抽取。 |
-| **`module-power-quality`** | **业务模块**：负责电能质量测试数据（Excel/CSV）的读取、解析与结构化处理。 |
-| **`module-waveform-vision`** | **业务模块**：负责波形图像的识别与关键参数提取。 |
+  项目的启动入口，负责系统的整体配置、用户管理以及基于JWT的登录认证。
 
-### 🎨 前端工程(`waveform-analysis-platform-ui`)
-  基于Vue 3 + Vite + Element-Plus + Pinia构建的现代化数据交互与波形可视化分析平台。
+- `module-common`
 
-## 🛠️ 核心技术栈
+  基础公共模块，存放全局统一响应体、全局异常处理器以及各类常用工具类。
 
-- **后端:** JDK 17, Spring Boot 3.2.x, MyBatis-Plus, Knife4j (Swagger 3), EasyExcel, Hutool
-- **前端:** Vue 3 (Composition API), Vue Router, Pinia, Element-Plus, ECharts
-- **部署:** Nginx 前后端分离代理
+- `module-comtrade`
+
+  COMTRADE格式录波文件读取解析模块，负责读取和解析符合IEEE标准的COMTRADE录波文件（.cfg和.dat文件），支持将数据解析并导出为标准CSV格式。
+
+- `module-waveform-vision`
+
+  波形图像识别关键参数模块，集成原生OpenCV图像处理库，用于识别和分析录波波形图像中的特征参数（如暂态最大值、稳态值、阶跃响应时间等）。
+
+- `module-power-quality`
+
+  电能质量测试数据自动化报告生成模块，负责读取仪器导出的Excel数据，并根据预设的Word模板自动填充并生成标准的电能质量测试数据报告。
+
+#### 技术选型
+
+本平台后端基于Spring Boot框架进行业务骨架的搭建，数据持久层采用MyBatis框架对MySQL数据库进行基本的台账存取。针对核心的电力波形图像识别需求，系统集成OpenCV图形处理库并利用JavaCPP实现跨平台原生绑定；自动化报表处理部分则组合使用Hutool实现对仪器导出Excel数据的读取，并配合poi-tl与原生Apache POI完成Word模板的生成与写入；用户登录及接口鉴权采用本地JWT算法进行Token的签发与校验，接口调试页面由Knife4j自动生成。
+
+#### 环境要求
+
+本平台后端的开发与运行需要使用Java17语言环境，项目的打包和多模块构建依赖Maven 3.6及以上版本。
+
+#### 示例
+
+comtrade格式录波文件读取解析
+
+![](https://github.com/nanmingjushi/waveform-analysis-platform/blob/master/%E7%A4%BA%E4%BE%8B/comtrade%E6%A0%BC%E5%BC%8F%E5%BD%95%E6%B3%A2%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E8%A7%A3%E6%9E%90.png?raw=true)
+
+波形图像识别关键参数
+
+![](https://github.com/nanmingjushi/waveform-analysis-platform/blob/master/%E7%A4%BA%E4%BE%8B/%E6%B3%A2%E5%BD%A2%E5%9B%BE%E5%83%8F%E8%AF%86%E5%88%AB%E5%85%B3%E9%94%AE%E5%8F%82%E6%95%B0.png?raw=true)
+
+电能质量测试数据自动化读取
+
+![](https://github.com/nanmingjushi/waveform-analysis-platform/blob/master/%E7%A4%BA%E4%BE%8B/%E7%94%B5%E8%83%BD%E8%B4%A8%E9%87%8F%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE%E8%87%AA%E5%8A%A8%E5%8C%96%E8%AF%BB%E5%8F%96.png?raw=true)
+
+
+

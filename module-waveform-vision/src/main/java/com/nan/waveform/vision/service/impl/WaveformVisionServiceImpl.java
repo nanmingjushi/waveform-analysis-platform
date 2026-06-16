@@ -104,7 +104,7 @@ public class WaveformVisionServiceImpl implements WaveformVisionService {
             SteadyIdentifyResultVo fileVo = new SteadyIdentifyResultVo();
             fileVo.setFileName(file.getOriginalFilename());
             fileVo.setMode(mode);
-            fileVo.setUnit(isVoltage ? "kV" : "A");
+            fileVo.setUnit(isVoltage ? "V" : "A");
             List<SteadyIdentifyResultVo.SteadyPhaseVo> phaseVoList = new ArrayList<>();
 
             Mat img = null;

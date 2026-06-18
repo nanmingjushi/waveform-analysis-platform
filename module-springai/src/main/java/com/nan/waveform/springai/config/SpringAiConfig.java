@@ -1,6 +1,7 @@
 package com.nan.waveform.springai.config;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,7 @@ public class SpringAiConfig {
     public ChatClient ollamaChatClient(OllamaChatModel ollamaChatModel) {
         return ChatClient.builder(ollamaChatModel)
                 .defaultSystem("你是一个电力系统专家，擅长解答关于试验录波文件快速解析的问题。")
+                .defaultAdvisors(new SimpleLoggerAdvisor())  // 加会话日志，普通对话和流式对话都会被打印
                 .build();
     }
 
@@ -34,6 +36,7 @@ public class SpringAiConfig {
     public ChatClient qwenChatClient(OpenAiChatModel openAiChatModel) {
         return ChatClient.builder(openAiChatModel)
                 .defaultSystem("你是一个电力系统专家，擅长解答关于试验录波文件快速解析的问题。")
+                .defaultAdvisors(new SimpleLoggerAdvisor())  // 加会话日志，普通对话和流式对话都会被打印
                 .build();
     }
 

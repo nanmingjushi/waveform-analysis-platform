@@ -42,7 +42,7 @@ spring:
       # 百炼官方的 OpenAI 兼容标准网关地址
       base-url: https://dashscope.aliyuncs.com/compatible-mode
       # 阿里云百炼控制台申请的密钥
-      api-key: sk-********************************
+      api-key: sk-****************************
       chat:
         options:
           # 指定模型
@@ -66,6 +66,8 @@ jwt:
 logging:
   level:
     com.alibaba.excel.metadata.format.DataFormatter: OFF
+    # 让 Spring AI 官方的 Advisor 切面直接在控制台输出会话日志
+    org.springframework.ai.chat.client.advisor: DEBUG
 
 
 # module-waveform-vision模块的配置参数

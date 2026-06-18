@@ -1,5 +1,9 @@
 server:
   port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force-response: true
 
 spring:
   application:
@@ -22,6 +26,19 @@ spring:
       enabled: true
       max-file-size: 50MB  # 单个文件允许的最大上限
       max-request-size: 100MB  # 单次HTTP请求的总大小上限
+
+  # springai
+  ai:
+    ollama:
+      # Ollama 默认的本地服务地址
+      base-url: http://localhost:11434
+      chat:
+        options:
+          # 指定模型名称，必须严格一致
+          model: deepseek-r1:1.5b
+          # 采样温度：0.0 最严谨，1.0 最具创意。
+          temperature: 0.6
+
 
 # MyBatis配置
 mybatis:

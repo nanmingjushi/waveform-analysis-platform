@@ -18,6 +18,6 @@ public class WebConfig implements WebMvcConfigurer{
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**") // 拦截所有接口
-                .excludePathPatterns("/api/auth/login", "/doc.html", "/webjars/**", "/v3/api-docs/**"); // 放行登录接口和 Knife4j 接口文档
+                .excludePathPatterns("/api/auth/login", "/doc.html", "/webjars/**", "/v3/api-docs/**","/ai/**"); // 放行登录接口和 Knife4j 接口文档
     }
 }

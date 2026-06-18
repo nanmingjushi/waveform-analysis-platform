@@ -30,6 +30,11 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-ollama</artifactId>
         </dependency>
+        <!--云平台API用OpenAI协议-->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

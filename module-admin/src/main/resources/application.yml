@@ -29,14 +29,24 @@ spring:
 
   # springai
   ai:
+    # 1. 本地 Ollama 配置
     ollama:
-      # Ollama 默认的本地服务地址
       base-url: http://localhost:11434
       chat:
         options:
-          # 指定模型名称，必须严格一致
           model: deepseek-r1:1.5b
-          # 采样温度：0.0 最严谨，1.0 最具创意。
+          temperature: 0.6
+
+    # 2. 阿里云百炼配置（OpenAI 规范）
+    openai:
+      # 百炼官方的 OpenAI 兼容标准网关地址
+      base-url: https://dashscope.aliyuncs.com/compatible-mode
+      # 阿里云百炼控制台申请的密钥
+      api-key: sk-********************************
+      chat:
+        options:
+          # 指定模型
+          model: qwen3.7-plus
           temperature: 0.6
 
 

@@ -19,9 +19,9 @@ public class ChatController {
 
     private final ChatClient chatClient;
 
-    // 推荐通过自动注入 ChatClient.Builder 来构建 ChatClient
-    public ChatController(ChatClient.Builder builder) {
-        this.chatClient = builder.build();
+    // 名字必须严格对应 Config 里的方法名 ollamaChatClient，Spring 会自动按名称匹配注入
+    public ChatController(ChatClient ollamaChatClient) {
+        this.chatClient = ollamaChatClient;
     }
 
     /**
@@ -29,22 +29,16 @@ public class ChatController {
      * 适合不需要流式展示的后台业务场景，大模型全部想好后一次性吐出所有文本
      */
     @GetMapping("/chat")
-    public String chat(@RequestParam(value = "prompt", defaultValue = "你好") String prompt) {
-        return chatClient.prompt()
-                .user(prompt)
-                .call()
-                .content();
+    public String chat(@RequestParam String prompt) {
+        return chatClient.prompt().user(prompt).call().content();
     }
 
     /**
      * 接口 2：流式返回 (SSE - Server-Sent Events)
      * 适合前端对话框。实时流式输出
      */
-    @GetMapping(value="/stream", produces=MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> stream(@RequestParam String prompt){
-        return chatClient.prompt()
-                .user(prompt)
-                .stream()
-                .content();
+        return chatClient.prompt().user(prompt).stream().content();
     }
 }

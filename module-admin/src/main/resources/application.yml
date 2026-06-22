@@ -42,7 +42,7 @@ spring:
       # 百炼官方的 OpenAI 兼容标准网关地址
       base-url: https://dashscope.aliyuncs.com/compatible-mode
       # 阿里云百炼控制台申请的密钥
-      api-key: sk-****************************
+      api-key: sk-*******************
       chat:
         options:
           # 指定模型

@@ -3,6 +3,7 @@ package com.nan.waveform.springai.controller;
 import com.nan.waveform.springai.service.RagDocumentService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
@@ -49,7 +50,16 @@ public class QwenChatController {
                 .advisors(s -> s.param(CONVERSATION_ID, finalChatId));
         //是否启用RAG
         if (useRag) {
-            spec.advisors(QuestionAnswerAdvisor.builder(vectorStore).build());
+            //构建检索请求参数
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .topK(3)                 // 检索前几个最相关的文档片段（比如 Top 3）
+                    .similarityThreshold(0.6) // 相似度分数阈值（0.0 ~ 1.0），超过 0.6 才用来回答
+                    .build();
+
+            // 将带有自定义参数的 searchRequest 喂给 Advisor
+            spec.advisors(QuestionAnswerAdvisor.builder(vectorStore)
+                    .searchRequest(searchRequest)
+                    .build());
         }
         return spec
                 .call()
@@ -72,7 +82,16 @@ public class QwenChatController {
                 .advisors(s -> s.param(CONVERSATION_ID, finalChatId));
         //是否启用RAG
         if (useRag) {
-            spec.advisors(QuestionAnswerAdvisor.builder(vectorStore).build());
+            //构建检索请求参数
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .topK(3)                 // 检索前几个最相关的文档片段（比如 Top 3）
+                    .similarityThreshold(0.6) // 相似度分数阈值（0.0 ~ 1.0），超过 0.6 才用来回答
+                    .build();
+
+            // 将带有自定义参数的 searchRequest 喂给 Advisor
+            spec.advisors(QuestionAnswerAdvisor.builder(vectorStore)
+                    .searchRequest(searchRequest)
+                    .build());
         }
         return spec
                 .stream()

@@ -24,8 +24,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 50MB  # 单个文件允许的最大上限
-      max-request-size: 100MB  # 单次HTTP请求的总大小上限
+      max-file-size: 100MB  # 单个文件允许的最大上限
+      max-request-size: 200MB  # 单次HTTP请求的总大小上限
 
   # springai
   ai:
@@ -42,7 +42,7 @@ spring:
       # 百炼官方的 OpenAI 兼容标准网关地址
       base-url: https://dashscope.aliyuncs.com/compatible-mode
       # 阿里云百炼控制台申请的密钥
-      api-key: sk-**********************
+      api-key: sk-****************
       chat:  #对话模型
         options:
           # 指定模型

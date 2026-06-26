@@ -25,6 +25,14 @@
 - `module-power-quality`
 
   电能质量测试数据自动化报告生成模块，负责读取仪器导出的Excel数据，并根据预设的Word模板自动填充并生成标准的电能质量测试数据报告。
+  
+- `module-springai`
+
+  SpringAI+Qwen3.7plus：电力系统AI专家助手
+
+  SpringAI+RAG：IEEE/国网标准/规范的本地知识库
+
+  SpringAI+MCP：从录波仪导出的xls电能质量测试数据自动化读取
 
 #### 技术选型
 
@@ -32,7 +40,7 @@
 
 #### 环境要求
 
-本平台后端的开发与运行需要使用Java17语言环境，项目的打包和多模块构建依赖Maven 3.6及以上版本。
+Java版本17，springboot版本3.4.7，springai版本1.0.3
 
 #### 示例
 
@@ -48,9 +56,10 @@ comtrade格式录波文件读取解析
 
 ![](https://github.com/nanmingjushi/waveform-analysis-platform/blob/master/%E7%A4%BA%E4%BE%8B/%E7%94%B5%E8%83%BD%E8%B4%A8%E9%87%8F%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE%E8%87%AA%E5%8A%A8%E5%8C%96%E8%AF%BB%E5%8F%96.png?raw=true)
 
-电力系统AI专家助手
+电力系统AI专家助手、本地知识库（大语言模型+RAG）
 
 ![](https://github.com/nanmingjushi/waveform-analysis-platform/blob/master/%E7%A4%BA%E4%BE%8B/%E7%94%B5%E5%8A%9B%E7%B3%BB%E7%BB%9FAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E4%B8%93%E5%AE%B6%E5%8A%A9%E6%89%8B.png?raw=true)
 
+电能质量测试数据自动化读取（大语言模型+MCP）
 
-
+![电能质量报告自动生成（集成MCP）.png](https://github.com/nanmingjushi/waveform-analysis-platform/blob/master/%E7%A4%BA%E4%BE%8B/%E7%94%B5%E8%83%BD%E8%B4%A8%E9%87%8F%E6%8A%A5%E5%91%8A%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%EF%BC%88%E9%9B%86%E6%88%90MCP%EF%BC%89.png?raw=true)

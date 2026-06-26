@@ -42,7 +42,7 @@ spring:
       # 百炼官方的 OpenAI 兼容标准网关地址
       base-url: https://dashscope.aliyuncs.com/compatible-mode
       # 阿里云百炼控制台申请的密钥
-      api-key: sk-****************
+      api-key: sk-****************************************************
       chat:  #对话模型
         options:
           # 指定模型
@@ -51,6 +51,20 @@ spring:
       embedding:  #向量模型
         options:
           model: text-embedding-v4
+
+    # MCP
+    mcp:
+      client:
+        enabled: true
+        stdio:
+          connections:
+            waveform-analyzer:
+              command: C:\\Users\\26354\\IdeaProjects\\waveform-analysis-platform\\module-springai\\src\\main\\resources\\mcp\\.venv\\Scripts\\python.exe
+              args:
+                - C:\\Users\\26354\\IdeaProjects\\waveform-analysis-platform\\module-springai\\src\\main\\resources\\mcp\\src\\server.py
+
+
+
 
 
 # MyBatis配置
@@ -71,6 +85,8 @@ logging:
     com.alibaba.excel.metadata.format.DataFormatter: OFF
     # 让 Spring AI 官方的 Advisor 切面直接在控制台输出会话日志
     org.springframework.ai.chat.client.advisor: DEBUG
+    io.modelcontextprotocol: DEBUG
+    org.springframework.ai.mcp: DEBUG
 
 
 # module-waveform-vision模块的配置参数
